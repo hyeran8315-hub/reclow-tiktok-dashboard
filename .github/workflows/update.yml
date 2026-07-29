@@ -34,7 +34,7 @@ jobs:
       - name: Run Apify task and update CSV
         env:
           APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
-          APIFY_TASK_ID: respectable_tabla_b2q~reclow-weekly-tiktok-scraper
+          APIFY_TASK_ID: nqtwaJND8MdBHmXpe
         run: python update_data.py
 
       - name: Commit updated data
