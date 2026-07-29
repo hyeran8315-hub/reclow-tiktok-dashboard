@@ -1,0 +1,50 @@
+name: Update TikTok dashboard data
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every Monday at 09:00 Korea Standard Time (00:00 UTC)
+    - cron: "0 0 * * 1"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: reclow-weekly-update
+  cancel-in-progress: false
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Apify task and update CSV
+        env:
+          APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+          APIFY_TASK_ID: respectable_tabla_b2q~reclow-weekly-tiktok-scraper
+        run: python update_data.py
+
+      - name: Commit updated data
+        run: |
+          if git diff --quiet -- reclow_tiktok_analysis.csv; then
+            echo "No data changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reclow_tiktok_analysis.csv
+          git commit -m "chore: weekly TikTok data update"
+          git push
